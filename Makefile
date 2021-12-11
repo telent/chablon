@@ -1,13 +1,19 @@
 default: chablon.elf
 
-ARM_NONE_EABI_TOOLCHAIN_PATH=/nix/store/5imhhly1nsvrcz1jmdcwsrv3d5b9j5rb-gcc-arm-embedded-10-2020-q4-major
-NRF5_SDK_PATH=/nix/store/jx3c0a456nkf7zs55d3pahyfwzyh20r4-nRF5_SDK_15.3.0
-LUA_PATH=/nix/store/kc8wn4frqxfn3vrndn50dqqgnqhy8vv1-lua-arm-unknown-none-eabi-5.3
+ifndef ARM_NONE_EABI_TOOLCHAIN_PATH
+$(error Missing required parameter ARM_NONE_EABI_TOOLCHAIN_PATH)
+endif
+ifndef NRF5_SDK_PATH
+$(error Missing required parameter NRF5_SDK_PATH)
+endif
+ifndef LUA_PATH
+$(error Missing required parameter LUA_PATH)
+endif
 
 # logging adds about 1.3k to the RAM region
 LOGGING=-DNRF_LOG_BACKEND_RTT_ENABLED=1 -DNRF_LOG_ENABLED=1 -DNRF_LOG_DEFERRED=0
 
-SYSROOT=--sysroot=/nix/store/5imhhly1nsvrcz1jmdcwsrv3d5b9j5rb-gcc-arm-embedded-10-2020-q4-major/bin
+SYSROOT=--sysroot=$(ARM_NONE_EABI_TOOLCHAIN_PATH)/bin
 
 DEFS=-DBOARD_PCA10040 -DCONFIG_GPIO_AS_PINRESET -DFREERTOS -DNIMBLE_CFG_CONTROLLER -DNRF52 -DNRF52832 -DNRF52832_XXAA -DNRF52_PAN_12 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_31 -DNRF52_PAN_36 -DNRF52_PAN_51 -DNRF52_PAN_54 -DNRF52_PAN_55 -DNRF52_PAN_58 -DNRF52_PAN_64 -DNRF52_PAN_74  -DOS_CPUTIME_FREQ  -D__HEAP_SIZE=4096 -D__STACK_SIZE=1024  -DDEBUG -DDEBUG_NRF_USER $(LOGGING)
 

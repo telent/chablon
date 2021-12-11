@@ -9,6 +9,6 @@ define connect_pinetime
 end
 
 define reload
-  file /home/dan/src/pinetime/chablon/chablon
+  file /home/dan/src/pinetime/chablon/chablon.elf
   load
 end
