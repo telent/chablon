@@ -167,10 +167,8 @@ chablon.elf: chablon
 	mv $^ $@
 
 LDFLAGS=$(SYSROOT) $(OPTS) \
-     -T/home/dan/src/pinetime/infinitime/gcc_nrf52.ld  \
+     -T gcc_nrf52.ld  \
      -Wl,--gc-sections \
      -Wl,--print-memory-usage --specs=nano.specs \
      -lc -lnosys -lm -Wl,-Map=pinetime-recovery-1.7.1.map \
-     -L/home/dan/src/pinetime/infinitime/src/.. \
      -L$(LUA_PATH)/lib -llua
-#     -L../build/src  -lnimble -llittlefs
