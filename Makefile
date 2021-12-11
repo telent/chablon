@@ -4,8 +4,12 @@ ARM_NONE_EABI_TOOLCHAIN_PATH=/nix/store/5imhhly1nsvrcz1jmdcwsrv3d5b9j5rb-gcc-arm
 NRF5_SDK_PATH=/nix/store/jx3c0a456nkf7zs55d3pahyfwzyh20r4-nRF5_SDK_15.3.0
 LUA_PATH=/nix/store/kc8wn4frqxfn3vrndn50dqqgnqhy8vv1-lua-arm-unknown-none-eabi-5.3
 
+# logging adds about 1.3k to the RAM region
+LOGGING=-DNRF_LOG_BACKEND_RTT_ENABLED=1 -DNRF_LOG_ENABLED=1 -DNRF_LOG_DEFERRED=0
+
 SYSROOT=--sysroot=/nix/store/5imhhly1nsvrcz1jmdcwsrv3d5b9j5rb-gcc-arm-embedded-10-2020-q4-major/bin
-DEFS=-DBOARD_PCA10040 -DCONFIG_GPIO_AS_PINRESET -DDEBUG -DDEBUG_NRF_USER -DFREERTOS -DNIMBLE_CFG_CONTROLLER -DNRF52 -DNRF52832 -DNRF52832_XXAA -DNRF52_PAN_12 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_31 -DNRF52_PAN_36 -DNRF52_PAN_51 -DNRF52_PAN_54 -DNRF52_PAN_55 -DNRF52_PAN_58 -DNRF52_PAN_64 -DNRF52_PAN_74 -DNRF_LOG_BACKEND_RTT_ENABLED=1 -DNRF_LOG_ENABLED=1 -DOS_CPUTIME_FREQ  -D__HEAP_SIZE=4096 -D__STACK_SIZE=1024 -DNRF_LOG_DEFERRED=0
+
+DEFS=-DBOARD_PCA10040 -DCONFIG_GPIO_AS_PINRESET -DFREERTOS -DNIMBLE_CFG_CONTROLLER -DNRF52 -DNRF52832 -DNRF52832_XXAA -DNRF52_PAN_12 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_31 -DNRF52_PAN_36 -DNRF52_PAN_51 -DNRF52_PAN_54 -DNRF52_PAN_55 -DNRF52_PAN_58 -DNRF52_PAN_64 -DNRF52_PAN_74  -DOS_CPUTIME_FREQ  -D__HEAP_SIZE=4096 -D__STACK_SIZE=1024  -DDEBUG -DDEBUG_NRF_USER $(LOGGING)
 
 NRF5_SDK_SOURCE_FILES= \
         modules/nrfx/mdk/system_nrf52.c \
@@ -31,22 +35,24 @@ NRF5_SDK_SOURCE_FILES= \
         components/libraries/util/app_error_weak.c \
         components/libraries/util/app_error_handler_gcc.c \
         components/libraries/util/app_util_platform.c \
-        components/libraries/log/src/nrf_log_backend_rtt.c \
-        components/libraries/log/src/nrf_log_backend_serial.c \
-        components/libraries/log/src/nrf_log_default_backends.c \
-        components/libraries/log/src/nrf_log_frontend.c \
-        components/libraries/log/src/nrf_log_str_formatter.c \
         components/libraries/memobj/nrf_memobj.c \
         components/libraries/ringbuf/nrf_ringbuf.c \
         components/libraries/strerror/nrf_strerror.c \
-        external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
-        external/segger_rtt/SEGGER_RTT.c \
-        external/segger_rtt/SEGGER_RTT_printf.c \
         external/utf_converter/utf.c \
         external/fprintf/nrf_fprintf.c \
         external/fprintf/nrf_fprintf_format.c \
         modules/nrfx/drivers/src/nrfx_twim.c \
         components/libraries/gpiote/app_gpiote.c
+
+ifdef LOGGING
+NRF5_SDK_SOURCE_FILES+= \
+	components/libraries/log/src/nrf_log_backend_rtt.c \
+        components/libraries/log/src/nrf_log_backend_serial.c \
+        components/libraries/log/src/nrf_log_default_backends.c \
+        components/libraries/log/src/nrf_log_frontend.c \
+        components/libraries/log/src/nrf_log_str_formatter.c
+endif
+
 NRF5_SDK_OBJ_FILES=$(NRF5_SDK_SOURCE_FILES:.c=.o)
 
 
@@ -155,13 +161,16 @@ libnrf.a: $(patsubst %,nrf/%,$(NRF5_SDK_OBJ_FILES))
 gcc_startup_nrf52.o: $(NRF5_SDK_PATH)/modules/nrfx/mdk/gcc_startup_nrf52.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-chablon: \
+OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
-	FreeRTOS/port_cmsis_systick.o \
-	libnrf.a
+	FreeRTOS/port_cmsis_systick.o
+LOADLIBES=-lnrf
+
+chablon: $(OBJECTS)
+$(OBJECTS) libnrf.a $(NRF5_SDK_OBJ_FILES): Makefile
 
 chablon.elf: chablon
 	mv $^ $@
