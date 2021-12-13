@@ -15,7 +15,24 @@ LOGGING=-DNRF_LOG_BACKEND_RTT_ENABLED=1 -DNRF_LOG_ENABLED=1 -DNRF_LOG_DEFERRED=0
 
 SYSROOT=--sysroot=$(ARM_NONE_EABI_TOOLCHAIN_PATH)/bin
 
-DEFS=-DBOARD_PCA10040 -DCONFIG_GPIO_AS_PINRESET -DFREERTOS -DNIMBLE_CFG_CONTROLLER -DNRF52 -DNRF52832 -DNRF52832_XXAA -DNRF52_PAN_12 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_31 -DNRF52_PAN_36 -DNRF52_PAN_51 -DNRF52_PAN_54 -DNRF52_PAN_55 -DNRF52_PAN_58 -DNRF52_PAN_64 -DNRF52_PAN_74  -DOS_CPUTIME_FREQ  -D__HEAP_SIZE=4096 -D__STACK_SIZE=1024  -DDEBUG -DDEBUG_NRF_USER $(LOGGING)
+
+DEFS=-DBOARD_PCA10040 \
+ -DCONFIG_GPIO_AS_PINRESET \
+ -DFREERTOS \
+ -DNIMBLE_CFG_CONTROLLER \
+ -DNRF52 -DNRF52832 -DNRF52832_XXAA \
+ -DNRF52_PAN_12 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_31 -DNRF52_PAN_36 \
+ -DNRF52_PAN_51 -DNRF52_PAN_54 -DNRF52_PAN_55 -DNRF52_PAN_58 -DNRF52_PAN_64 \
+ -DNRF52_PAN_74 \
+ -DOS_CPUTIME_FREQ  -D__HEAP_SIZE=4096 -D__STACK_SIZE=1024 \
+ -DNRFX_SPIM_ENABLED=1 -DNRFX_SPIM0_ENABLED=1 \
+ -DDEBUG -DDEBUG_NRF_USER $(LOGGING)
+
+# this is to skip reading "apply_old_config.h", which overrides our
+# config settings in unpredictable ways
+DEFS+=-DAPPLY_OLD_CONFIG_H__=1
+
+
 
 NRF5_SDK_SOURCE_FILES= \
         modules/nrfx/mdk/system_nrf52.c \
@@ -66,19 +83,6 @@ NRF5_SDK_OBJ_FILES=$(NRF5_SDK_SOURCE_FILES:.c=.o)
 
 INCLUDES=-Ilibs \
     -I FreeRTOS \
-    -Ilibs/date/includes \
-    -Ilibs/mynewt-nimble/porting/npl/freertos/include \
-    -Ilibs/mynewt-nimble/nimble/include \
-    -Ilibs/mynewt-nimble/porting/nimble/include \
-    -Ilibs/mynewt-nimble/nimble/host/include \
-    -Ilibs/mynewt-nimble/nimble/controller/include \
-    -Ilibs/mynewt-nimble/nimble/transport/ram/include \
-    -Ilibs/mynewt-nimble/nimble/drivers/nrf52/include \
-    -Ilibs/mynewt-nimble/ext/tinycrypt/include \
-    -Ilibs/mynewt-nimble/nimble/host/services/gap/include \
-    -Ilibs/mynewt-nimble/nimble/host/services/gatt/include \
-    -Ilibs/mynewt-nimble/nimble/host/util/include \
-    -Ilibs/mynewt-nimble/nimble/host/store/ram/include \
     -I$(NRF5_SDK_PATH)/components/drivers_nrf/nrf_soc_nosd \
     -I$(NRF5_SDK_PATH)/components \
     -I$(NRF5_SDK_PATH)/components/boards \
@@ -149,10 +153,12 @@ INCLUDES=-Ilibs \
     -isystem . \
     -I$(NRF5_SDK_PATH)/external/thedotfactory_fonts
 
-OPTS=-MP -MD -mthumb -mabi=aapcs -Wall -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -ftree-vrp -Wno-unused-parameter -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined -g3 -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin --short-enums -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wreturn-type -Werror=return-type -fstack-usage -Og
+OPTS=-MP -MD -mthumb -mabi=aapcs -g3 -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin --short-enums -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fstack-usage -Os
+WARNINGS=-Wall -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -ftree-vrp -Wno-unused-parameter -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined  -Wreturn-type -Werror=return-type
+STD=-std=c99
 
 CC=$(ARM_NONE_EABI_TOOLCHAIN_PATH)/bin/arm-none-eabi-gcc
-CFLAGS=$(SYSROOT) $(DEFS) $(INCLUDES) $(OPTS)
+CFLAGS=$(SYSROOT) $(DEFS) $(INCLUDES) $(OPTS) $(WARNINGS) $(STD)
 
 define build_sdk_file
 $(patsubst %.c,nrf/%.o,$(1)): $(NRF5_SDK_PATH)/$(1)
@@ -179,7 +185,10 @@ OBJECTS=\
 LOADLIBES=-lnrf
 
 chablon: $(OBJECTS)
-$(OBJECTS) libnrf.a $(NRF5_SDK_OBJ_FILES): Makefile
+chablon: libnrf.a
+
+$(OBJECTS) $(NRF5_SDK_OBJ_FILES): Makefile sdk_config.h
+$(OBJECTS): CFLAGS+=-pedantic
 
 chablon.elf: chablon
 	mv $^ $@
