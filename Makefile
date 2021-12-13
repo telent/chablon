@@ -22,7 +22,7 @@ NRF5_SDK_SOURCE_FILES= \
         components/boards/boards.c \
         integration/nrfx/legacy/nrf_drv_clock.c \
         modules/nrfx/drivers/src/nrfx_clock.c \
-        modules/nrfx/drivers/src/nrfx_gpiote.c \
+        modules/nrfx/drivers/src/nrfx_spim.c \
         modules/nrfx/soc/nrfx_atomic.c \
         modules/nrfx/drivers/src/nrfx_saadc.c \
         external/freertos/source/croutine.c \
@@ -44,11 +44,13 @@ NRF5_SDK_SOURCE_FILES= \
         components/libraries/memobj/nrf_memobj.c \
         components/libraries/ringbuf/nrf_ringbuf.c \
         components/libraries/strerror/nrf_strerror.c \
+	external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
+	external/segger_rtt/SEGGER_RTT.c \
+	external/segger_rtt/SEGGER_RTT_printf.c \
         external/utf_converter/utf.c \
         external/fprintf/nrf_fprintf.c \
         external/fprintf/nrf_fprintf_format.c \
-        modules/nrfx/drivers/src/nrfx_twim.c \
-        components/libraries/gpiote/app_gpiote.c
+        modules/nrfx/drivers/src/nrfx_twim.c
 
 ifdef LOGGING
 NRF5_SDK_SOURCE_FILES+= \
@@ -170,6 +172,7 @@ gcc_startup_nrf52.o: $(NRF5_SDK_PATH)/modules/nrfx/mdk/gcc_startup_nrf52.S
 OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
+	lcd_spi_controller.o \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o

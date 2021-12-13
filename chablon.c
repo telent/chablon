@@ -1,14 +1,16 @@
+#include <chablon.h>
+
 // nrf
 #include <hal/nrf_rtc.h>
 #include <hal/nrf_wdt.h>
 #include <legacy/nrf_drv_clock.h>
-#include <libraries/gpiote/app_gpiote.h>
 #include <libraries/timer/app_timer.h>
 #include <softdevice/common/nrf_sdh.h>
 #include <nrf_delay.h>
 #include <libraries/log/nrf_log.h>
 #include <libraries/log/nrf_log_ctrl.h>
 #include <libraries/log/nrf_log_default_backends.h>
+#include "nrf_gpio.h"
 
 
 #if 0
@@ -42,8 +44,13 @@
 
 void system_task(void *self) {
      NRF_LOG_INFO("systemtask task started! %s", self);
+     nrf_gpio_cfg_output(5);	/* spi flash csn */
+     nrf_gpio_pin_set(5);	/* spi flash csn */
+
+     lcd_spi_controller_init();
+     lcd_write_junk();
      for (;;) {
-	  vTaskDelay(1000);
+	  vTaskDelay(3000);
 	  NRF_LOG_INFO("systemtask task running");
      }
 }
