@@ -120,8 +120,6 @@ void write_spi_fn(const uint8_t *tx_bytes,
 #define BACKLIGHT_MEDIUM 22
 #define BACKLIGHT_LOW 14
 
-
-
 static void set_brightness(int level) {
     nrf_gpio_pin_write(BACKLIGHT_HIGH, !(level >= 3));
     nrf_gpio_pin_write(BACKLIGHT_MEDIUM, !(level >= 2));
@@ -138,7 +136,6 @@ void lcd_spi_controller_init(void)
     nrf_gpio_cfg_output(BACKLIGHT_LOW);
 
     set_brightness(3);
-
 
     SPI_COMMAND(SWRESET);
     nrf_delay_ms(150 * 3);
@@ -183,9 +180,11 @@ void lcd_fill_rect(int x, int y, int w, int h, uint16_t colour) {
 
 	SPI_COMMAND(RAMWR);
 	/* can't do this in one operation - speculating there's */
-	/* a 256 byte limit on polled SPI */
-	write_spi_fn((uint8_t *) buf, w, 0);
-	write_spi_fn((uint8_t *) buf, w, 0);
+	/* a 256 byte limit on polled SPI. The bitwise ops are  */
+	/* to ensure that both transfers are even numbers of bytes */
+	/* even if w is odd */
+	write_spi_fn((uint8_t *) buf, w & (~1), 0);
+	write_spi_fn((uint8_t *) buf, w + (w&1) , 0);
     }
 }
 
