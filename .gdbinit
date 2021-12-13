@@ -1,11 +1,15 @@
 set substitute-path /build/chablon .
 set history save on
 
-define connect_pinetime
+define bmp_connect
   target extended-remote /dev/ttyACM0
   monitor swdp_scan
   attach 1
   monitor rtt
+end
+
+define ocd_connect
+  target extended-remote localhost:3333
 end
 
 define reload
