@@ -50,6 +50,11 @@ void system_task(void *self) {
 
      lua_State *L = lua_state();
 
+     if(! luaC_dostring_or_log(L, "return tostring(6*7);")) {
+	 NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
+	 lua_pop(L, 1);
+     }
+
      /* lcd_spi_controller_init(); */
      /* lcd_write_junk(); */
      for (;;) {

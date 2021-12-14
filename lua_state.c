@@ -27,6 +27,16 @@ static void opensomelibs (lua_State *L) {
     }
 }
 
+int luaC_dostring_or_log(lua_State *L, char *string) {
+    int ret = luaL_dostring(L, string);
+    NRF_LOG_INFO("luaL_dostring=%d", ret);
+    if(ret != LUA_OK) {
+	NRF_LOG_INFO("luaL_dostring error %s", lua_tostring(L, -1));
+	lua_pop(L, 1);
+    }
+    return ret;
+}
+
 static lua_State *L = NULL;
 
 lua_State * lua_state() {
