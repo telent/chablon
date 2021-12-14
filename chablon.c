@@ -35,13 +35,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <timers.h>
-/* #include <drivers/Hrs3300.h> */
-/* #include <drivers/Bma421.h> */
 
-/* extern uint32_t __start_noinit_data; */
-/* extern uint32_t __stop_noinit_data; */
-
-/* uint32_t NoInit_MagicWord __attribute__((section(".noinit"))); */
+extern char hello_lua[];
 
 void system_task(void *self) {
      NRF_LOG_INFO("systemtask task started! %s", self);
@@ -50,10 +45,11 @@ void system_task(void *self) {
 
      lua_State *L = lua_state();
 
-     if(! luaC_dostring_or_log(L, "return tostring(6*7);")) {
+     if(! luaC_dostring_or_log(L, hello_lua)) {
 	 NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
 	 lua_pop(L, 1);
      }
+     NRF_LOG_FLUSH();
 
      /* lcd_spi_controller_init(); */
      /* lcd_write_junk(); */

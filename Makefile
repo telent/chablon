@@ -166,6 +166,9 @@ $(patsubst %.c,nrf/%.o,$(1)): $(NRF5_SDK_PATH)/$(1)
 	$(CC) $(CFLAGS) -o $$@ -c $$^
 endef
 
+%.lua.c: %.lua
+	xxd -i $< $@
+
 $(foreach f,$(NRF5_SDK_SOURCE_FILES),$(eval $(call build_sdk_file,$(f))))
 
 libnrf.a: $(patsubst %,nrf/%,$(NRF5_SDK_OBJ_FILES))
@@ -180,6 +183,7 @@ OBJECTS=\
 	chablon.o \
 	lua_state.o \
 	lcd_spi_controller.o \
+	hello.lua.o \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o
