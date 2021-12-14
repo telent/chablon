@@ -198,5 +198,5 @@ LDFLAGS=$(SYSROOT) $(OPTS) \
      -T gcc_nrf52.ld  \
      -Wl,--gc-sections \
      -Wl,--print-memory-usage --specs=nano.specs \
-     -lc -lnosys -lm -Wl,-Map=chablon.map \
+     -lnosys -Wl,-Map=chablon.map \
      -L$(LUA_PATH)/lib
