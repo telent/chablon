@@ -10,6 +10,12 @@ end
 
 define ocd_connect
   target extended-remote localhost:3333
+  monitor rtt server 9090
+end
+
+define ocd_rtt
+  monitor rtt setup 0x20000000 65536 "SEGGER RTT"
+  monitor rtt start
 end
 
 define reload
