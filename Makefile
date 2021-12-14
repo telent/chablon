@@ -178,11 +178,12 @@ gcc_startup_nrf52.o: $(NRF5_SDK_PATH)/modules/nrfx/mdk/gcc_startup_nrf52.S
 OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
+	lua_state.o \
 	lcd_spi_controller.o \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o
-LOADLIBES=-lnrf
+LOADLIBES=-lnrf -llua -lm
 
 chablon: $(OBJECTS)
 chablon: libnrf.a
@@ -197,5 +198,5 @@ LDFLAGS=$(SYSROOT) $(OPTS) \
      -T gcc_nrf52.ld  \
      -Wl,--gc-sections \
      -Wl,--print-memory-usage --specs=nano.specs \
-     -lc -lnosys -lm -Wl,-Map=pinetime-recovery-1.7.1.map \
-     -L$(LUA_PATH)/lib -llua
+     -lc -lnosys -lm -Wl,-Map=chablon.map \
+     -L$(LUA_PATH)/lib

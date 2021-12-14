@@ -1,4 +1,5 @@
 #include <chablon.h>
+#include <lua.h>
 
 // nrf
 #include <hal/nrf_rtc.h>
@@ -47,8 +48,10 @@ void system_task(void *self) {
      nrf_gpio_cfg_output(5);	/* spi flash csn */
      nrf_gpio_pin_set(5);	/* spi flash csn */
 
-     lcd_spi_controller_init();
-     lcd_write_junk();
+     lua_State *L = lua_state();
+
+     /* lcd_spi_controller_init(); */
+     /* lcd_write_junk(); */
      for (;;) {
 	  vTaskDelay(3000);
 	  NRF_LOG_INFO("systemtask task running");
