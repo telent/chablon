@@ -6,6 +6,11 @@ let nrf5Sdk = pkgs.fetchzip {
       sha256 = "0kwgafa51idn0cavh78zgakb02xy49vzag7firv9rgqmk1pa3yd5";
 
     };
+    fennel = pkgs.fetchurl {
+      name = "fennel.lua";
+      url = "https://fennel-lang.org/downloads/fennel-1.0.0";
+      hash = "sha256:1nha32yilzagfwrs44hc763jgwxd700kaik1is7x7lsjjvkgapw7";
+    };
     pkgsArm =  import <nixpkgs> { crossSystem = { system = "arm-none-eabi"; } ; };
     lua = pkgsArm.stdenv.mkDerivation {
       pname = "lua";
@@ -56,6 +61,7 @@ let nrf5Sdk = pkgs.fetchzip {
         "ARM_NONE_EABI_TOOLCHAIN_PATH=${gcc-arm-embedded}"
         "NRF5_SDK_PATH=${nrf5Sdk}"
         "LUA_PATH=${lua}"
+        "FENNEL=${fennel}"
       ];
       postBuild = ''
         ${ctags}/bin/ctags --recurse -e . ${lua}/ ${nrf5Sdk}

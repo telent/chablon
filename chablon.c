@@ -1,6 +1,8 @@
 #include <chablon.h>
 #include <lua.h>
 
+#include "lua_state.h"
+
 // nrf
 #include <hal/nrf_rtc.h>
 #include <hal/nrf_wdt.h>
@@ -37,6 +39,7 @@
 #include <timers.h>
 
 extern char hello_lua[];
+extern int hello_lua_len;
 
 void system_task(void *self) {
      NRF_LOG_INFO("systemtask task started! %s", self);
@@ -45,7 +48,7 @@ void system_task(void *self) {
 
      lua_State *L = lua_state();
 
-     if(! luaC_dostring_or_log(L, hello_lua)) {
+     if(! luaC_dobytes_or_log(L, hello_lua, hello_lua_len)) {
 	 NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
 	 lua_pop(L, 1);
      }
