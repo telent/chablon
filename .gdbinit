@@ -10,7 +10,7 @@ end
 
 define ocd_connect
   target extended-remote localhost:3333
-  monitor rtt server 9090
+  monitor rtt server start 9090 0
 end
 
 define ocd_rtt
