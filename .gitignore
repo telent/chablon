@@ -5,3 +5,6 @@ nrf/
 *.map
 *.a
 *.elf
+*.lua.c
+*~
+TAGS
