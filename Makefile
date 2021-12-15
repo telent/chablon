@@ -197,7 +197,7 @@ chablon: $(OBJECTS)
 chablon: libnrf.a
 
 $(OBJECTS) $(NRF5_SDK_OBJ_FILES): Makefile sdk_config.h
-$(OBJECTS): CFLAGS+=-pedantic
+
 
 chablon.elf: chablon
 	mv $^ $@
