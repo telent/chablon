@@ -198,6 +198,9 @@ $(OBJECTS): CFLAGS+=-pedantic
 chablon.elf: chablon
 	mv $^ $@
 
+TAGS:
+	ctags --recurse -e . $(LUA_PATH) $(NRF5_SDK_PATH)
+
 LDFLAGS=$(SYSROOT) $(OPTS) \
      -T gcc_nrf52.ld  \
      -Wl,--gc-sections \
