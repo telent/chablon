@@ -68,6 +68,7 @@
 
 (fn hw-reset []
   (gpio.set_direction reset-pin 0)
+  (gpio.set_direction dc-pin 0)
   (gpio.write reset-pin 1)
   (gpio.write reset-pin 0)
   (task.delay 200)
