@@ -4284,7 +4284,7 @@
 // <e> NRFX_SPIM_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef NRFX_SPIM_CONFIG_LOG_ENABLED
-  #define NRFX_SPIM_CONFIG_LOG_ENABLED 1
+  #define NRFX_SPIM_CONFIG_LOG_ENABLED 0
 #endif
 // <o> NRFX_SPIM_CONFIG_LOG_LEVEL  - Default Severity level
 
@@ -7754,7 +7754,7 @@
 // <q> NRF_GFX_ENABLED  - nrf_gfx - GFX module
 
 #ifndef NRF_GFX_ENABLED
-  #define NRF_GFX_ENABLED 1
+  #define NRF_GFX_ENABLED 0
 #endif
 
 #ifndef ST7735_ENABLED

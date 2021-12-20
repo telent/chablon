@@ -167,7 +167,7 @@ $(patsubst %.c,nrf/%.o,$(1)): $(NRF5_SDK_PATH)/$(1)
 endef
 
 %.lua: %.fnl
-	lua $(FENNEL) --compile $< > $@
+	$(LUA_BUILD_PATH)/bin/lua $(FENNEL) --compile $<   > $@
 
 %.lua.c: %.lua
 	xxd -i $< $@
@@ -185,9 +185,10 @@ OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
 	lua_state.o \
-	lcd_spi_controller.o \
 	hello.lua.o \
 	backlight.lua.o \
+	lcd.lua.o \
+	spi-controller.lua.o \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o

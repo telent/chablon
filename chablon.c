@@ -38,20 +38,14 @@
 #include <task.h>
 #include <timers.h>
 
-extern char hello_lua[];
-extern int hello_lua_len;
+extern void lua_hello();
 
 void system_task(void *self) {
      NRF_LOG_INFO("systemtask task started! %s", self);
      nrf_gpio_cfg_output(5);	/* spi flash csn */
      nrf_gpio_pin_set(5);	/* spi flash csn */
 
-     lua_State *L = lua_state();
-
-     if(! luaC_dobytes_or_log(L, hello_lua, hello_lua_len)) {
-	 NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
-	 lua_pop(L, 1);
-     }
+     lua_hello();
      NRF_LOG_FLUSH();
 
      /* lcd_spi_controller_init(); */
@@ -73,8 +67,9 @@ int main(void) {
      nrf_drv_clock_init();
      NRF_LOG_INFO("start the clock!");
 
-     // systemTasksMsgQueue = xQueueCreate(10, 1);
-     if (pdPASS != xTaskCreate(system_task, "MAIN", 350, "main task", 0, &taskHandle)) {
+     if (pdPASS != xTaskCreate(system_task, "MAIN", 3500,
+			       "main task",configMAX_PRIORITIES - 1,
+			       &taskHandle)) {
 	  APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
      }
      //     NRF_LOG_INFO("systemtask handle %p", taskHandle);

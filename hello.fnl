@@ -1,6 +1,8 @@
 (backlight.init)
+(backlight.set_brightness 3)
 
-(for [i 1 10]
-   (for [level 0 3]
-      (backlight.set_brightness level)
-      (task.delay 1000)))
+
+(lcd.init)
+(lcd.draw_stuff)
+
+"hey"

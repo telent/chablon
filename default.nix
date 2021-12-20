@@ -61,6 +61,7 @@ let nrf5Sdk = pkgs.fetchzip {
         "ARM_NONE_EABI_TOOLCHAIN_PATH=${gcc-arm-embedded}"
         "NRF5_SDK_PATH=${nrf5Sdk}"
         "LUA_PATH=${lua}"
+        "LUA_BUILD_PATH=${pkgsBuildBuild.lua5_3}"
         "FENNEL=${fennel}"
       ];
       postBuild = ''
