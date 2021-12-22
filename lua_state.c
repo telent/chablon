@@ -61,7 +61,7 @@ int luaC_dobytes_or_log(lua_State *L, const uint8_t *bytes, int len) {
     const char * err = lua_tostring(L, -1);
 
     if(ret != LUA_OK) {
-	NRF_LOG_INFO("luaL_dostring error %s", err);
+	NRF_LOG_INFO("lua script error %s", err);
 	lua_pop(L, 1);
     }
     return ret;
@@ -81,6 +81,7 @@ static int byte_buffer_index (lua_State* L) {
 }
 
 static int inspect(lua_State* L) {
+    NRF_LOG_INFO("sbrk %x", sbrk(0));
     if(lua_isinteger(L, 1))
 	NRF_LOG_INFO("inspect int %d", lua_tointeger(L, 1));
     if(lua_isstring(L, 1))
@@ -113,7 +114,8 @@ static void create_byte_buffer_metatable(lua_State* L) {
 
 static int byte_buffer_new(lua_State* L) {
     int size = luaL_checkinteger(L, 1);
-    lua_newuserdata(L, size);
+    void * bytes = lua_newuserdata(L, size);
+    memset(bytes, 0, size);
     luaL_getmetatable(L, "byte_buffer");
     lua_setmetatable(L, -2);
     return 1;
