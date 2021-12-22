@@ -15,6 +15,7 @@ LUA_SOURCE(backlight);
 LUA_SOURCE(spi_controller);
 LUA_SOURCE(lcd);
 LUA_SOURCE(hello);
+LUA_SOURCE(byte_buffer);
 
 #define CHUNK_NAME(c) ("@" #c ".lua")
 #define RUN_FILE(c) luaC_dobytes_or_log(L, c##_lua, c##_lua_len, CHUNK_NAME(c))
@@ -257,12 +258,12 @@ static void create_libs(lua_State* L) {
     luaL_newlib(L, task_funcs);
     lua_setglobal(L, "task");
 
-    static const struct luaL_Reg byte_buffer_funcs[] = {
-	{ "new",  byte_buffer_new },
+    static const struct luaL_Reg glue_funcs[] = {
+	{ "byte_buffer_new",  byte_buffer_new },
 	{ NULL, NULL }
     };
-    luaL_newlib(L, byte_buffer_funcs);
-    lua_setglobal(L, "byte_buffer");
+    luaL_newlib(L, glue_funcs);
+    lua_setglobal(L, "glue");
 
     static const struct luaL_Reg spictl_funcs[] = {
 	{ "new",  spictl_new },
@@ -275,6 +276,10 @@ static void create_libs(lua_State* L) {
 
     lua_pushcfunction(L, trace);
     lua_setglobal(L, "trace");
+
+    (void) RUN_FILE(byte_buffer);
+    lua_setglobal(L, "byte_buffer");
+    memused("byte_buffer");
 
     (void) RUN_FILE(backlight);
     lua_setglobal(L, "backlight");

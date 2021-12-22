@@ -66,6 +66,10 @@
 (fn spi-data [bytes count]
   (spi-write bytes false count))
 
+(fn spi-data-raw [buffer count]
+  (gpio.write dc-pin 1)
+  (spi:transfer_raw buffer count))
+
 (fn hw-reset []
   (gpio.set_direction reset-pin 0)
   (gpio.set_direction dc-pin 0)
@@ -103,7 +107,7 @@
 
   (spi-command DISPON))
 
-(local blank (byte_buffer.new 240))
+(local lcd-buffer (byte_buffer.new 240))
 
 (fn clear []
   (spi-command CASET)
@@ -114,17 +118,22 @@
   (gpio.write dc-pin (if command? 0 1))
 
   (for [i 0 (* 2 240)]
-    (spi:transfer_raw  blank 240)))
-
+    (spi-data-raw lcd-buffer 240)))
 
 (fn draw-stuff []
-  (for [x 30 220 30]
-    (spi-command CASET) (spi-data [0 x 0 (+ 8 x)] 4)
-    (for [y 30 220 30]
-      (spi-command RASET) (spi-data [0 y 0 (+ 8 y)] 4)
-      (spi-command RAMWR)
-      (for [i 0 15]
-        (spi-data [0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f] 8)))))
+  (let [b (byte_buffer.from_table
+           lcd-buffer
+           [0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f
+            0x00 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0
+            0x00 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0
+            0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f])]
+    (for [x 30 220 30]
+      (spi-command CASET) (spi-data [0 x 0 (+ 8 x)] 4)
+      (for [y 30 220 30]
+        (spi-command RASET) (spi-data [0 y 0 (+ 8 y)] 4)
+        (spi-command RAMWR)
+        (for [i 0 3] (spi-data-raw b 32)))))
+  )
 
 {
  :init init

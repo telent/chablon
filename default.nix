@@ -11,6 +11,7 @@ let nrf5Sdk = pkgs.fetchzip {
       url = "https://fennel-lang.org/downloads/fennel-1.0.0";
       hash = "sha256:1nha32yilzagfwrs44hc763jgwxd700kaik1is7x7lsjjvkgapw7";
     };
+
     pkgsArm =  import <nixpkgs> { crossSystem = { system = "arm-none-eabi"; } ; };
     lua = pkgsArm.stdenv.mkDerivation {
       pname = "lua";

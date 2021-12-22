@@ -181,14 +181,13 @@ libnrf.a: $(patsubst %,nrf/%,$(NRF5_SDK_OBJ_FILES))
 gcc_startup_nrf52.o: $(NRF5_SDK_PATH)/modules/nrfx/mdk/gcc_startup_nrf52.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
+LUA_MODULES=hello byte-buffer backlight lcd spi-controller
+
 OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
 	lua_state.o \
-	hello.lua.o \
-	backlight.lua.o \
-	lcd.lua.o \
-	spi-controller.lua.o \
+	$(patsubst %,%.lua.o,$(LUA_MODULES)) \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o
