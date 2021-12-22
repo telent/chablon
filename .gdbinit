@@ -2,7 +2,7 @@ set substitute-path /build/chablon .
 set history save on
 
 define bmp_connect
-  target extended-remote /dev/ttyACM0
+  target extended-remote /dev/ttyBMP0
   monitor swdp_scan
   attach 1
   monitor rtt
