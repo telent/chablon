@@ -53,9 +53,10 @@ static void opensomelibs (lua_State *L) {
 }
 
 int luaC_dobytes_or_log(lua_State *L, const uint8_t *bytes, int len, char * chunk_name) {
-    int ret = (luaL_loadbuffer(L, (const char *)bytes, len, chunk_name) ||
-	       (lua_pcall(L, 0, LUA_MULTRET, 0)));
-
+    int ret = luaL_loadbuffer(L, (const char *)bytes, len, chunk_name);
+    if(ret == LUA_OK)
+	ret = lua_pcall(L, 0, LUA_MULTRET, 0);
+    lua_gc(L, LUA_GCCOLLECT, 0);
     if(ret != LUA_OK) {
 	const char * err = lua_tostring(L, -1);
 	NRF_LOG_INFO("lua script error %s", err);
@@ -302,10 +303,9 @@ lua_State * lua_state() {
 	return L;
 
     L = luaL_newstate();
-    (void) luaL_dostring(L, "return collectgarbage('collect')");
-    (void) luaL_dostring(L, "return collectgarbage('setpause', 100)");
-    (void) luaL_dostring(L, "return collectgarbage('setstepmul', 100)");
-    lua_pop(L, 2);
+
+    lua_gc(L, LUA_GCSETPAUSE, 100);
+    lua_gc(L, LUA_GCSETSTEPMUL, 100);
 
     opensomelibs(L);
     create_byte_buffer_metatable(L);
