@@ -68,6 +68,23 @@ int luaC_dostring_or_log(lua_State *L, const char *string) {
     return luaC_dobytes_or_log(L, (const uint8_t *)string, strlen(string), "string");
 }
 
+static int trace(lua_State* L) {
+    if(lua_isinteger(L, 1)) {
+	NRF_LOG_INFO("brk %x trace int = %d",
+		     sbrk(0), lua_tointeger(L, 1));
+    } else if(lua_isstring(L, 1)) {
+	NRF_LOG_INFO("brk %x trace string = %s",
+		     sbrk(0), lua_tostring(L, 1));
+    }
+    else {
+	NRF_LOG_INFO("brk %x trace %s = ???",
+		     sbrk(0),
+		     lua_typename(L, lua_type(L, 1)));
+    }
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
 /* expose byte buffer accessors to lua, for spi etc */
 
 static int byte_buffer_index (lua_State* L) {
@@ -75,15 +92,6 @@ static int byte_buffer_index (lua_State* L) {
     int index = luaL_checkinteger(L, 2);
     lua_pushnumber(L, buf[index-1]);
     return 1;
-}
-
-static int inspect(lua_State* L) {
-    NRF_LOG_INFO("sbrk %x", sbrk(0));
-    if(lua_isinteger(L, 1))
-	NRF_LOG_INFO("inspect int %d", lua_tointeger(L, 1));
-    if(lua_isstring(L, 1))
-	NRF_LOG_INFO("inspect string %s", lua_tostring(L, 1));
-    return 0;
 }
 
 static int byte_buffer_newindex (lua_State* L) {
@@ -264,8 +272,8 @@ static void create_libs(lua_State* L) {
     lua_setglobal(L, "spictl_ffi");
     memused("spictl");
 
-    lua_pushcfunction(L, inspect);
-    lua_setglobal(L, "inspect");
+    lua_pushcfunction(L, trace);
+    lua_setglobal(L, "trace");
 
     (void) RUN_FILE(backlight);
     lua_setglobal(L, "backlight");

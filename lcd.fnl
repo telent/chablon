@@ -112,7 +112,7 @@
   (spi-data [0 0 0 240] 4)
   (spi-command RAMWR)
   (gpio.write dc-pin (if command? 0 1))
-  (inspect 1)
+
   (for [i 0 (* 2 240)]
     (spi:transfer_raw  blank 240)))
 
