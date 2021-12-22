@@ -31,7 +31,8 @@ let nrf5Sdk = pkgs.fetchzip {
           -e '/define LUA_COMPAT_LOG10/c\#undef LUA_COMPAT_LOG10' \
           -e '/define LUA_COMPAT_LOADSTRING/c\#undef LUA_COMPAT_LOADSTRING' \
           -e '/define LUA_COMPAT_MODULE/c\#undef LUA_COMPAT_MODULE' \
-          -e '/define LUA_COMPAT_MAXN/c\#undef LUA_COMPAT_MAXN'
+          -e '/define LUA_COMPAT_MAXN/c\#undef LUA_COMPAT_MAXN' \
+          -e '/define LUAI_MAXSTACK/c\#define LUAI_MAXSTACK 15000'
       '';
 
       buildPhase =
