@@ -9,19 +9,17 @@
 
 #define LUA_SOURCE(c) \
     extern uint8_t c##_lua[]; \
-    extern int c##_lua_len;
+    extern int c##_lua_len
 
-LUA_SOURCE(backlight)
-LUA_SOURCE(spi_controller)
-LUA_SOURCE(lcd)
-LUA_SOURCE(hello)
+LUA_SOURCE(backlight);
+LUA_SOURCE(spi_controller);
+LUA_SOURCE(lcd);
+LUA_SOURCE(hello);
+
+#define CHUNK_NAME(c) ("@" #c ".lua")
+#define RUN_FILE(c) luaC_dobytes_or_log(L, c##_lua, c##_lua_len, CHUNK_NAME(c))
 
 void * sbrk(intptr_t);
-void * mem_used() {
-    return sbrk(0);
-}
-
-
 
 #define LUA_ERROR_CHECK(code) \
 do							    \
@@ -54,13 +52,12 @@ static void opensomelibs (lua_State *L) {
     }
 }
 
-
-int luaC_dobytes_or_log(lua_State *L, const uint8_t *bytes, int len) {
-    int ret = (luaL_loadbuffer(L, (const char *)bytes, len, "chunk") ||
+int luaC_dobytes_or_log(lua_State *L, const uint8_t *bytes, int len, char * chunk_name) {
+    int ret = (luaL_loadbuffer(L, (const char *)bytes, len, chunk_name) ||
 	       (lua_pcall(L, 0, LUA_MULTRET, 0)));
-    const char * err = lua_tostring(L, -1);
 
     if(ret != LUA_OK) {
+	const char * err = lua_tostring(L, -1);
 	NRF_LOG_INFO("lua script error %s", err);
 	lua_pop(L, 1);
     }
@@ -68,7 +65,7 @@ int luaC_dobytes_or_log(lua_State *L, const uint8_t *bytes, int len) {
 }
 
 int luaC_dostring_or_log(lua_State *L, const char *string) {
-    return luaC_dobytes_or_log(L, (const uint8_t *)string, strlen(string));
+    return luaC_dobytes_or_log(L, (const uint8_t *)string, strlen(string), "string");
 }
 
 /* expose byte buffer accessors to lua, for spi etc */
@@ -160,7 +157,7 @@ static int spictl_new(lua_State* L) {
 
     lua_pushnil(L);
     while(lua_next(L, 2) != 0) {
-	char * key = lua_tostring(L, -2);
+	const char * key = lua_tostring(L, -2);
 	if(!strcmp(key, "frequency"))
 	    spi_config.frequency =
 		(unsigned)((float)lua_tonumber(L, -1));
@@ -265,18 +262,23 @@ static void create_libs(lua_State* L) {
     };
     luaL_newlib(L, spictl_funcs);
     lua_setglobal(L, "spictl_ffi");
-
-    luaC_dobytes_or_log(L, backlight_lua, backlight_lua_len);
-    lua_setglobal(L, "backlight");
-
-    luaC_dobytes_or_log(L, spi_controller_lua, spi_controller_lua_len);
-    lua_setglobal(L, "spi_controller");
-
-    luaC_dobytes_or_log(L, lcd_lua, lcd_lua_len);
-    lua_setglobal(L, "lcd");
+    memused("spictl");
 
     lua_pushcfunction(L, inspect);
     lua_setglobal(L, "inspect");
+
+    (void) RUN_FILE(backlight);
+    lua_setglobal(L, "backlight");
+    memused("backlight");
+
+    (void) RUN_FILE(spi_controller);
+    lua_setglobal(L, "spi_controller");
+    memused("spi_controller");
+
+    (void) RUN_FILE(lcd);
+    lua_setglobal(L, "lcd");
+    memused("lcd");
+
 }
 
 
@@ -292,8 +294,9 @@ lua_State * lua_state() {
 	return L;
 
     L = luaL_newstate();
-    luaL_dostring(L, "return collectgarbage('setpause', 100)");
-    luaL_dostring(L, "return collectgarbage('setstepmul', 100)");
+    (void) luaL_dostring(L, "return collectgarbage('collect')");
+    (void) luaL_dostring(L, "return collectgarbage('setpause', 100)");
+    (void) luaL_dostring(L, "return collectgarbage('setstepmul', 100)");
     lua_pop(L, 2);
 
     opensomelibs(L);
@@ -307,7 +310,7 @@ lua_State * lua_state() {
 void lua_hello() {
     lua_State *L = lua_state();
 
-    if(! luaC_dobytes_or_log(L, hello_lua, hello_lua_len)) {
+    if(! luaC_dobytes_or_log(L, hello_lua, hello_lua_len, CHUNK_NAME(hello))) {
 	NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
 	lua_pop(L, 1);
      }
