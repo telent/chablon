@@ -54,6 +54,11 @@ Once you've obtained and built the prerequisites, you can run `make`
 in this directory. There are some defines at the top that you should
 pass to it to say where all those other things are.
 
+Alternatively, if you are compute-rich but time-poor, you could try
+running Nix in Docker (`nixos/nix` image). Be aware that it will
+probably want to build gcc and binutils for ARM.
+
+
 ### Installing to the watch
 
 The build process creates a file called `chablon.elf`, which I flash
