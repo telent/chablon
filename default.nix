@@ -15,18 +15,19 @@ let nrf5Sdk = pkgs.fetchzip {
     pkgsArm =  import <nixpkgs> { crossSystem = { system = "arm-none-eabi"; } ; };
     lua = pkgsArm.stdenv.mkDerivation {
       pname = "lua";
-      version = "5.3";
+      version = "5.4.3";
 
       src = builtins.fetchTarball {
-        url = "https://www.lua.org/ftp/lua-5.3.6.tar.gz";
+        url = "https://www.lua.org/ftp/lua-5.4.3.tar.gz";
         name = "lua";
-        sha256 = "1dp74vnqznvdniqp0is1l55v96kx5yshkgcmzcwcfqzadkzjs0ds";
+        sha256 = "0xwm9czxz71jk4bj4r1p5rm483prp7n8bz3bdxigl2r8p2v1knsz";
       };
 
       configurePhase = ''
         sed -i src/luaconf.h \
-          -e '/define LUA_32BITS/c\#define LUA_32BITS' \
+          -e '/define LUA_32BITS/c\#define LUA_32BITS (1)' \
           -e '/define LUA_COMPAT_UNPACK/c\#undef LUA_COMPAT_UNPACK' \
+          -e '/define LUA_COMPAT_MATHLIB/c\#undef LUA_COMPAT_MATHLIB' \
           -e '/define LUA_COMPAT_LOADERS/c\#undef LUA_COMPAT_LOADERS' \
           -e '/define LUA_COMPAT_LOG10/c\#undef LUA_COMPAT_LOG10' \
           -e '/define LUA_COMPAT_LOADSTRING/c\#undef LUA_COMPAT_LOADSTRING' \

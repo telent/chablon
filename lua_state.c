@@ -309,8 +309,7 @@ lua_State * lua_state() {
 
     L = luaL_newstate();
 
-    lua_gc(L, LUA_GCSETPAUSE, 100);
-    lua_gc(L, LUA_GCSETSTEPMUL, 100);
+    lua_gc(L, LUA_GCGEN, 10, 100);
 
     opensomelibs(L);
     create_byte_buffer_metatable(L);

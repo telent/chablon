@@ -17,6 +17,9 @@
 (local panel-width 240)
 (local panel-height 320) 	;; really?
 
+;; haven't checked this thoroughly, but these local variables seem
+;; to use a lot of ram, so commented out all but the ones we use
+
 ;(local NOP 0x00)
 (local SWRESET 0x01)
 ;(local RDDID 0x04)
