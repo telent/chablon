@@ -6,9 +6,20 @@ endif
 ifndef NRF5_SDK_PATH
 $(error Missing required parameter NRF5_SDK_PATH)
 endif
+# this should point to the directory containing bare-metal ARM liblua.a
 ifndef LUA_PATH
 $(error Missing required parameter LUA_PATH)
 endif
+# this should point to the directory containing a Lua installation
+# that runs on the build machine (x86_64 or whatever)
+ifndef LUA_BUILD_PATH
+$(error Missing required parameter LUA_BUILD_PATH)
+endif
+
+###
+# in theory, you shouldn't have to change anything below
+# this point for local setup.
+
 
 # logging adds about 1.3k to the RAM region
 LOGGING=-DNRF_LOG_BACKEND_RTT_ENABLED=1 -DNRF_LOG_ENABLED=1 -DNRF_LOG_DEFERRED=0
