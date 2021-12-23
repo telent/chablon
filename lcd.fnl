@@ -112,32 +112,18 @@
   (spi-command RASET)
   (spi-data [0 0 0 240] 4)
   (spi-command RAMWR)
-  (gpio.write dc-pin 1)
   (for [i 0 (* 2 240)]
     (spi-data lcd-buffer 240)))
 
-(fn draw-stuff []
-  (let [b (byte_buffer.from_table
-           lcd-buffer
-           [0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f
-            0x00 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0
-            0x00 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0
-            0xf0 0x0f 0xf0 0x0f 0xf0 0x0f 0xf0 0x0f])
-        raset [0 0 0 8 ]
-        caset [0 0 0 8 ]]
-    (for [x 30 220 30]
-      (tset caset 2 x) (tset caset 4 (+ 8 x))
-      (spi-command CASET) (spi-data caset 4)
-      (for [y 30 220 30]
-        (tset raset 2 y) (tset raset 4 (+ 8 y))
-        (spi-command RASET) (spi-data raset 4)
-        (spi-command RAMWR)
-        (for [i 0 3] (spi-data b 32)))))
-  )
-
+(fn window [x y w h]
+  (spi-command CASET) (spi-data [0 x 0 (+ x w -1)])
+  (spi-command RASET) (spi-data [0 y 0 (+ y h -1)])
+  (spi-command RAMWR)
+  spi-data)
 
 {
+ :buffer lcd-buffer
  :init init
  :clear clear
- :draw_stuff draw-stuff
+ :window window
  }

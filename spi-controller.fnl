@@ -11,7 +11,6 @@
                  (byte_buffer.from_table buffer payload)
                  payload)
              len (or count (# payload)) ]
-         (trace payload)
          (spictl_ffi.transfer handle buf len)
          ))
      }))
