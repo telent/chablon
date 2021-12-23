@@ -59,19 +59,13 @@
 ;(local GMCTRN1 0xE1)
 ;(local PWCTR6 0xFC)
 
-(fn spi-write [payload command? count]
-  (gpio.write dc-pin (if command? 0 1))
-  (spi:transfer payload count))
-
 (fn spi-command [byte]
-  (spi-write [byte] true 1))
+  (gpio.write dc-pin 0)
+  (spi:transfer [byte] 1))
 
 (fn spi-data [bytes count]
-  (spi-write bytes false count))
-
-(fn spi-data-raw [buffer count]
   (gpio.write dc-pin 1)
-  (spi:transfer_raw buffer count))
+  (spi:transfer bytes count))
 
 (fn hw-reset []
   (gpio.set_direction reset-pin 0)
@@ -118,10 +112,9 @@
   (spi-command RASET)
   (spi-data [0 0 0 240] 4)
   (spi-command RAMWR)
-  (gpio.write dc-pin (if command? 0 1))
-
+  (gpio.write dc-pin 1)
   (for [i 0 (* 2 240)]
-    (spi-data-raw lcd-buffer 240)))
+    (spi-data lcd-buffer 240)))
 
 (fn draw-stuff []
   (let [b (byte_buffer.from_table
@@ -139,7 +132,7 @@
         (tset raset 2 y) (tset raset 4 (+ 8 y))
         (spi-command RASET) (spi-data raset 4)
         (spi-command RAMWR)
-        (for [i 0 3] (spi-data-raw b 32)))))
+        (for [i 0 3] (spi-data b 32)))))
   )
 
 
