@@ -67,7 +67,7 @@ int main(void) {
      nrf_drv_clock_init();
      NRF_LOG_INFO("start the clock!");
 
-     if (pdPASS != xTaskCreate(system_task, "MAIN", 3500,
+     if (pdPASS != xTaskCreate(system_task, "MAIN", 1000,
 			       "main task",configMAX_PRIORITIES - 1,
 			       &taskHandle)) {
 	  APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
