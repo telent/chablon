@@ -13,7 +13,7 @@ let nrf5Sdk = pkgs.fetchzip {
     };
 
     pkgsArm =  import <nixpkgs> { crossSystem = { system = "arm-none-eabi"; } ; };
-    lua = pkgsArm.stdenv.mkDerivation {
+    luaAttributes = {
       pname = "lua";
       version = "5.4.3";
 
@@ -48,6 +48,19 @@ let nrf5Sdk = pkgs.fetchzip {
       '';
 
     };
+    lua = pkgsArm.stdenv.mkDerivation luaAttributes;
+    luaBuild =  pkgs.stdenv.mkDerivation (luaAttributes // {
+      buildPhase =
+        let flags="-O3";
+        in ''
+          make -C src liblua.a lua luac CC=$CC CFLAGS=${builtins.toJSON flags} AR="$AR rcu" RANLIB="$RANLIB"
+        '';
+      installPhase = ''
+        mkdir -p $out/bin
+        cp src/{lua,luac} $out/bin
+      '';
+    });
+
     chablon = stdenv.mkDerivation {
       src = if lib.inNixShell
             then null
@@ -64,7 +77,7 @@ let nrf5Sdk = pkgs.fetchzip {
         "ARM_NONE_EABI_TOOLCHAIN_PATH=${gcc-arm-embedded}"
         "NRF5_SDK_PATH=${nrf5Sdk}"
         "LUA_PATH=${lua}"
-        "LUA_BUILD_PATH=${pkgsBuildBuild.lua5_4}"
+        "LUA_BUILD_PATH=${luaBuild}"
         "FENNEL=${fennel}"
       ];
       postBuild = ''

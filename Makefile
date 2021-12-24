@@ -180,7 +180,10 @@ endef
 %.lua: %.fnl
 	$(LUA_BUILD_PATH)/bin/lua $(FENNEL) --compile $<   > $@
 
-%.lua.c: %.lua
+%.luac: %.lua
+	$(LUA_BUILD_PATH)/bin/luac -o $@ $<
+
+%.lua.c: %.luac
 	xxd -i $< $@
 
 $(foreach f,$(NRF5_SDK_SOURCE_FILES),$(eval $(call build_sdk_file,$(f))))

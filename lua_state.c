@@ -8,8 +8,8 @@
 #include "nrfx_spim.h"
 
 #define LUA_SOURCE(c) \
-    extern uint8_t c##_lua[]; \
-    extern int c##_lua_len
+    extern uint8_t c##_luac[]; \
+    extern int c##_luac_len
 
 LUA_SOURCE(backlight);
 LUA_SOURCE(spi_controller);
@@ -18,7 +18,7 @@ LUA_SOURCE(hello);
 LUA_SOURCE(byte_buffer);
 
 #define CHUNK_NAME(c) ("@" #c ".lua")
-#define RUN_FILE(c) luaC_dobytes_or_log(L, c##_lua, c##_lua_len, CHUNK_NAME(c))
+#define RUN_FILE(c) luaC_dobytes_or_log(L, c##_luac, c##_luac_len, CHUNK_NAME(c))
 
 void * sbrk(intptr_t);
 
@@ -348,7 +348,7 @@ lua_State * lua_state() {
 void lua_hello() {
     lua_State *L = lua_state();
 
-    if(! luaC_dobytes_or_log(L, hello_lua, hello_lua_len, CHUNK_NAME(hello))) {
+    if(! RUN_FILE(hello)) {
 	NRF_LOG_INFO("answer is %s", lua_tostring(L, -1));
 	lua_pop(L, 1);
      }
