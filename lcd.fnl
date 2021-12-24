@@ -5,7 +5,7 @@
        (spi_controller.new
         0
         {
-         :frequency 0x80000000
+         :frequency :m8
          :mode 3
          :cs-pin 25
          :cipo-pin 4

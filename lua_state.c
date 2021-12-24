@@ -153,6 +153,32 @@ static nrfx_spim_t spi_instances[] = {
 
 };
 
+/* this may be premature optimization and strcmp would have
+ * been perfectly fine (it only gets called at setup time,
+ * anyway)
+ */
+
+static unsigned long nrf_frequency(const char *id) {
+#define freqhash(a,b,c) ((a<<16) | (b<<8) | (c))
+    if(id[0] == 'm') {
+	switch(id[1]) {
+	case '1': return NRF_SPIM_FREQ_1M;
+	case '2': return NRF_SPIM_FREQ_2M;
+	case '4': return NRF_SPIM_FREQ_4M;
+	case '8': return NRF_SPIM_FREQ_8M;
+	}
+    } else if(id[0]=='k') {
+	switch(freqhash(id[1], id[2], id[3])) {
+	case freqhash('1','2','5') : return NRF_SPIM_FREQ_125K;
+	case freqhash('2','5','0') : return NRF_SPIM_FREQ_250K;
+	case freqhash('5','0','0') : return NRF_SPIM_FREQ_500K;
+	}
+    }
+    return 0;
+#undef freqhash
+}
+
+
 static int spictl_new(lua_State* L) {
     int instance = luaL_checkinteger(L, 1);
     /* XXX check instance is in spi_instances */
@@ -170,7 +196,7 @@ static int spictl_new(lua_State* L) {
 	const char * key = lua_tostring(L, -2);
 	if(!strcmp(key, "frequency"))
 	    spi_config.frequency =
-		(unsigned)((float)lua_tonumber(L, -1));
+		nrf_frequency(lua_tostring(L, -1));
 	else if(!strcmp(key, "mode"))
 	    spi_config.mode = lua_tointeger(L, -1);
 	else if(!strcmp(key, "cs-pin"))
