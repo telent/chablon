@@ -55,7 +55,7 @@ NRF5_SDK_SOURCE_FILES= \
         modules/nrfx/drivers/src/nrfx_saadc.c \
         external/freertos/source/croutine.c \
         external/freertos/source/event_groups.c \
-        external/freertos/source/portable/MemMang/heap_4.c \
+        external/freertos/source/portable/MemMang/heap_3.c \
         external/freertos/source/list.c \
         external/freertos/source/queue.c \
         external/freertos/source/stream_buffer.c \
