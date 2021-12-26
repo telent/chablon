@@ -2,6 +2,7 @@
 *.o
 *.su
 nrf/
+nimble/
 *.map
 *.a
 *.elf

@@ -12,6 +12,18 @@ let nrf5Sdk = pkgs.fetchzip {
       hash = "sha256:1nha32yilzagfwrs44hc763jgwxd700kaik1is7x7lsjjvkgapw7";
     };
 
+    nimble =
+      let patch = ./nimble-fix-critical-section-defs.patch;
+      in
+        pkgs.fetchzip {
+          name = "nimble-1.4.0";
+          url = "https://dlcdn.apache.org/mynewt/apache-nimble-1.4.0/apache-mynewt-nimble-1.4.0.tgz";
+          sha256 = "1z4rfxnqxa6ywivgv3nikzhlv6vahjbn226zni6dz7ym3qrpfan9";
+          extraPostFetch = ''
+            patch -d $out -p1 < ${patch}
+          '';
+        };
+
     pkgsArm =  import <nixpkgs> { crossSystem = { system = "arm-none-eabi"; } ; };
     luaAttributes = {
       pname = "lua";
@@ -79,6 +91,7 @@ let nrf5Sdk = pkgs.fetchzip {
         "LUA_PATH=${lua}"
         "LUA_BUILD_PATH=${luaBuild}"
         "FENNEL=${fennel}"
+        "NIMBLE_PATH=${nimble}"
       ];
       postBuild = ''
         ${ctags}/bin/ctags --recurse -e . ${lua}/ ${nrf5Sdk}

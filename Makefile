@@ -43,8 +43,6 @@ DEFS=-DBOARD_PCA10040 \
 # config settings in unpredictable ways
 DEFS+=-DAPPLY_OLD_CONFIG_H__=1
 
-
-
 NRF5_SDK_SOURCE_FILES= \
         modules/nrfx/mdk/system_nrf52.c \
         components/boards/boards.c \
@@ -91,9 +89,100 @@ endif
 
 NRF5_SDK_OBJ_FILES=$(NRF5_SDK_SOURCE_FILES:.c=.o)
 
+NIMBLE_SOURCE_FILES=\
+        ext/tinycrypt/src/aes_encrypt.c \
+        ext/tinycrypt/src/utils.c \
+        ext/tinycrypt/src/cmac_mode.c \
+        ext/tinycrypt/src/ecc.c \
+        ext/tinycrypt/src/ecc_dh.c \
+	porting/npl/freertos/src/nimble_port_freertos.c \
+        porting/npl/freertos/src/npl_os_freertos.c \
+	nimble/host/src/ble_hs.c \
+	nimble/host/src/ble_hs_hci_evt.c \
+	nimble/host/src/ble_l2cap_sig_cmd.c \
+	nimble/host/src/ble_l2cap_sig.c \
+	nimble/host/src/ble_l2cap.c \
+	nimble/host/src/ble_hs_mbuf.c \
+	nimble/host/src/ble_sm.c \
+	nimble/host/src/ble_sm_cmd.c \
+	nimble/host/src/ble_sm_lgcy.c \
+	nimble/host/src/ble_sm_alg.c \
+	nimble/host/src/ble_sm_sc.c \
+	nimble/host/src/ble_gap.c \
+	nimble/host/src/ble_gatts.c \
+	nimble/host/src/ble_gattc.c \
+	nimble/host/src/ble_hs_conn.c \
+	nimble/host/src/ble_att_svr.c \
+	nimble/host/src/ble_store.c \
+	nimble/host/src/ble_store_util.c \
+	nimble/host/src/ble_hs_pvcy.c \
+	nimble/host/src/ble_hs_hci.c \
+	nimble/host/src/ble_hs_log.c \
+	nimble/host/src/ble_hs_hci_util.c \
+	nimble/host/src/ble_hs_hci_cmd.c \
+	nimble/host/src/ble_hs_cfg.c \
+	nimble/host/src/ble_uuid.c \
+	nimble/host/src/ble_hs_id.c \
+	nimble/host/src/ble_hs_misc.c \
+	nimble/host/src/ble_att.c \
+	nimble/host/src/ble_att_clt.c \
+	nimble/host/src/ble_att_cmd.c \
+	nimble/host/src/ble_hs_atomic.c \
+	nimble/host/src/ble_hs_adv.c \
+	nimble/host/src/ble_hs_flow.c \
+	nimble/host/src/ble_hs_mqueue.c \
+	nimble/host/src/ble_hs_stop.c \
+	nimble/host/src/ble_hs_startup.c \
+	nimble/host/store/ram/src/ble_store_ram.c \
+	nimble/host/src/ble_monitor.c \
+	nimble/transport/ram/src/ble_hci_ram.c \
+	nimble/controller/src/ble_ll.c \
+	nimble/controller/src/ble_ll_rand.c \
+	nimble/controller/src/ble_ll_conn.c \
+	nimble/controller/src/ble_ll_ctrl.c \
+	nimble/controller/src/ble_ll_hci.c \
+	nimble/controller/src/ble_ll_conn_hci.c \
+	nimble/controller/src/ble_ll_utils.c \
+	nimble/controller/src/ble_ll_scan.c \
+	nimble/controller/src/ble_ll_whitelist.c \
+	nimble/controller/src/ble_ll_adv.c \
+	nimble/controller/src/ble_ll_sched.c \
+	nimble/controller/src/ble_ll_supp_cmd.c \
+	nimble/controller/src/ble_ll_hci_ev.c \
+	nimble/controller/src/ble_ll_rfmgmt.c \
+	nimble/controller/src/ble_ll_resolv.c \
+	porting/nimble/src/os_cputime.c \
+	porting/nimble/src/os_cputime_pwr2.c \
+	porting/nimble/src/os_mbuf.c \
+	porting/nimble/src/os_mempool.c \
+	porting/nimble/src/hal_timer.c \
+	porting/nimble/src/mem.c \
+	porting/nimble/src/endian.c \
+	porting/nimble/src/os_msys_init.c \
+	nimble/drivers/nrf52/src/ble_hw.c \
+	nimble/drivers/nrf52/src/ble_phy.c \
+	nimble/host/services/gap/src/ble_svc_gap.c \
+	nimble/host/services/gatt/src/ble_svc_gatt.c \
+	nimble/host/util/src/addr.c \
+
+NIMBLE_OBJ_FILES=$(NIMBLE_SOURCE_FILES:.c=.o)
+
 
 INCLUDES=-Ilibs \
     -I FreeRTOS \
+    -I $(NIMBLE_PATH)/ext/tinycrypt/include \
+    -I nimble-override/ \
+    -I $(NIMBLE_PATH)/nimble/controller/include \
+    -I $(NIMBLE_PATH)/nimble/drivers/nrf52/include \
+    -I $(NIMBLE_PATH)/nimble/host/include \
+    -I $(NIMBLE_PATH)/nimble/host/store/ram/include \
+    -I $(NIMBLE_PATH)/nimble/host/services/gap/include \
+    -I $(NIMBLE_PATH)/nimble/host/services/gatt/include \
+    -I $(NIMBLE_PATH)/nimble/host/util/include \
+    -I $(NIMBLE_PATH)/nimble/include \
+    -I $(NIMBLE_PATH)/nimble/transport/ram/include \
+    -I $(NIMBLE_PATH)/porting/nimble/include \
+    -I $(NIMBLE_PATH)/porting/npl/freertos/include \
     -I$(NRF5_SDK_PATH)/components/drivers_nrf/nrf_soc_nosd \
     -I$(NRF5_SDK_PATH)/components \
     -I$(NRF5_SDK_PATH)/components/boards \
@@ -177,6 +266,12 @@ $(patsubst %.c,nrf/%.o,$(1)): $(NRF5_SDK_PATH)/$(1)
 	$(CC) $(CFLAGS) -o $$@ -c $$^
 endef
 
+define build_nimble_file
+$(patsubst %.c,nimble/%.o,$(1)): $(NIMBLE_PATH)/$(1)
+	@mkdir -p $$(dir $$@)
+	$(CC) $(CFLAGS) -Wno-sign-compare -o $$@ -c $$^
+endef
+
 %.lua: %.fnl
 	$(LUA_BUILD_PATH)/bin/lua $(FENNEL) --compile $<   > $@
 
@@ -187,8 +282,11 @@ endef
 	xxd -i $< $@
 
 $(foreach f,$(NRF5_SDK_SOURCE_FILES),$(eval $(call build_sdk_file,$(f))))
+$(foreach f,$(NIMBLE_SOURCE_FILES),$(eval $(call build_nimble_file,$(f))))
 
 libnrf.a: $(patsubst %,nrf/%,$(NRF5_SDK_OBJ_FILES))
+	ar rs $@ $^
+libnimble.a: $(patsubst %,nimble/%,$(NIMBLE_OBJ_FILES))
 	ar rs $@ $^
 
 
@@ -201,16 +299,18 @@ OBJECTS=\
 	gcc_startup_nrf52.o \
 	chablon.o \
 	lua_state.o \
+	ble.o \
 	$(patsubst %,%.lua.o,$(LUA_MODULES)) \
 	FreeRTOS/port.o \
 	FreeRTOS/port_cmsis.o \
 	FreeRTOS/port_cmsis_systick.o
-LOADLIBES=-lnrf -llua -lm
+LOADLIBES=-lnimble -lnrf -llua -lm
 
 chablon: $(OBJECTS)
-chablon: libnrf.a
+chablon: libnrf.a libnimble.a
 
 $(OBJECTS) $(NRF5_SDK_OBJ_FILES): Makefile sdk_config.h
+$(NIMBLE_OBJ_FILES): Makefile sdk_config.h nimble-override/syscfg/syscfg.h
 
 
 chablon.elf: chablon
