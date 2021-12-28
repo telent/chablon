@@ -46,7 +46,7 @@ void system_task(void *self) {
      nrf_gpio_pin_set(5);	/* spi flash csn */
 
      ble_init();
-
+     ble_start_advertising();
      lua_hello();
      NRF_LOG_FLUSH();
 

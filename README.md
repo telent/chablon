@@ -88,7 +88,7 @@ or lua coroutines) so we don't end up in callback hell
 
 * expose TWI for sensors/inputs
 
-* can we trim the image size?
+* can we trim the image size? [strides made]
 
 * some kind of font so we can write text to the screen
 
