@@ -72,7 +72,6 @@ void nimble_port_run(void) {
 
     while (1) {
 	ev = ble_npl_eventq_get(&g_eventq_dflt, BLE_NPL_TIME_FOREVER);
-	NRF_LOG_INFO("ble event");
 	ble_npl_event_run(ev);
     }
 }
@@ -271,24 +270,6 @@ void ble_start_advertising() {
     NEED(ble_gap_adv_start(address_type, NULL, 60*1000, &adv_params, gap_event_cb, NULL));
 }
 
-#if 0
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include "bsp/bsp.h"
-#include "host/ble_hs.h"
-#include "host/ble_uuid.h"
-#include "bleprph.h"
-#endif
-
-/**
- * The vendor specific security test service consists of two characteristics:
- *     o random-number-generator: generates a random 32-bit number each time
- *       it is read.  This characteristic can only be read over an encrypted
- *       connection.
- *     o static-value: a single-byte characteristic that can always be read,
- *       but can only be written over an encrypted connection.
- */
 
 /* 59462f12-9543-9999-12c8-58b459a2712d */
 static const ble_uuid128_t gatt_svr_svc_sec_test_uuid =
