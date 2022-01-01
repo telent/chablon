@@ -11,6 +11,13 @@ let nrf5Sdk = pkgs.fetchzip {
       url = "https://fennel-lang.org/downloads/fennel-1.0.0";
       hash = "sha256:1nha32yilzagfwrs44hc763jgwxd700kaik1is7x7lsjjvkgapw7";
     };
+    arpy = ps: ps.callPackage ./arpy.nix {};
+    python = pkgs.python3.withPackages(
+        ps: with ps; [
+          pyelftools
+          (arpy ps)
+        ]
+    );
 
     nimble =
       let patch = ./nimble-fix-critical-section-defs.patch;
@@ -104,7 +111,7 @@ let nrf5Sdk = pkgs.fetchzip {
         cleanish() { git  clean -f ; git clean -fdX ; }
       '';
 
-      nativeBuildInputs =  [ gcc-arm-embedded ];
+      nativeBuildInputs =  [ python gcc-arm-embedded ];
       buildInputs = [
         nrf5Sdk
         #    lua
