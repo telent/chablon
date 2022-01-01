@@ -13,99 +13,99 @@ import pdb
 # - tags (structs/unions/enum names)
 # - members of structs/unions (one ns per struct/union)
 # - other identifiers (functions, objects, typedefs, enum constants etc)
-tags = {}
-identifiers = {}
+names = {
+    'tag': {},
+    'identifier': {}
+}
 
-unnamed_count = 1
-def unnamed():
-    global unnamed_count
-    unnamed_count += 1
-    return "unnamed_%d" % unnamed_count
-
-def name_of(die):
-    if die.tag in ["DW_TAG_structure_type", "DW_TAG_union_type"]:
-        tag  = 'tag'
-    else:
-        tag = 'identifier'
-
+def die_name(die):
     if 'DW_AT_name' in die.attributes:
-        return {tag: die.attributes['DW_AT_name'].value.decode('ascii')}
+        return die.attributes['DW_AT_name'].value.decode('ascii')
     else:
         return None
 
-def find_type(die):
-    global tags
-    global identifiers
+def die_namespace(die):
+    if die.tag in ["DW_TAG_structure_type", "DW_TAG_union_type"]:
+        return 'tag'
+    else:
+        return 'identifier'
+
+def die_type(die):
+    if 'DW_AT_type' in die.attributes:
+        return die.get_DIE_from_attribute('DW_AT_type')
+    else:
+        return None
+
+
+def chase_die(die):
+    if die and die.tag in ['DW_TAG_volatile_type', 'DW_TAG_const_type']:
+        return chase_die(die_type(die))
+    else:
+        return die
+
+def array_count(die):
+    count = None
+    for child in die.iter_children():
+        if child.tag == 'DW_TAG_subrange_type':
+            if 'DW_AT_upper_bound' in child.attributes:
+                count = child.attributes['DW_AT_upper_bound'].value
+            elif 'DW_AT_count' in child.attributes:
+                count = child.attributes['DW_AT_count'].value
+            else:
+                pdb.set_trace()
+    return count
+
+def reference(die):
+    if die_type(die) == None:
+        return { 'kind': 'base', 'type': 'void' };
+    ref_die = chase_die(die_type(die))
+
+    if die_name(ref_die):
+        record_name(ref_die)
+        ref = {
+            die_namespace(ref_die): die_name(ref_die)
+        }
+    else:
+        ref = parse_die(ref_die)
+    return ref
+
+def parse_die(die):
     if die.tag == 'DW_TAG_array_type':
-        count = None
-        for child in die.iter_children():
-            if child.tag == 'DW_TAG_subrange_type':
-                if 'DW_AT_upper_bound' in child.attributes:
-                    count = child.attributes['DW_AT_upper_bound'].value
-                elif 'DW_AT_count' in child.attributes:
-                    count = child.attributes['DW_AT_count'].value
-                else:
-                    pdb.set_trace()
-        # for number of elements,
-        # find child called DW_TAG_subrange_type
-        # and get DW_AT_upper_bound and add 1
+
         return {
-            # XXX number of elements would be handy
-            'array': {
-                'count': count,
-                'of': find_type(die.get_DIE_from_attribute('DW_AT_type'))
-            }
+            'kind': 'array',
+            'count': array_count(die),
+            'of': reference(die)
         }
     elif die.tag == 'DW_TAG_base_type':
         return  {
+            'kind': 'base',
             'bytes': die.attributes['DW_AT_byte_size'].value,
-            'name': die.attributes['DW_AT_name'].value.decode('ascii')
+            'type': die.attributes['DW_AT_name'].value.decode('ascii')
         }
     elif die.tag == 'DW_TAG_typedef':
-        typedef = walk_typedef(die)
-        identifiers = { **identifiers, **typedef }
-        n = [*typedef][0]
-        bytes = None
-        if 'bytes' in typedef[n]:
-            bytes = typedef[n]['bytes']
-        return { 'typedef': n, 'bytes': bytes }
+        return {
+            'kind': 'typedef',
+#            'name': die_name(die),
+            'ref': reference(die)
+        }
     elif die.tag == 'DW_TAG_pointer_type':
-        ptr_to = None
-        if 'DW_AT_type' in die.attributes:
-            ptr_to = name_of(die.get_DIE_from_attribute('DW_AT_type'))
-        ptr_to = ptr_to or "void"
-        return  {
+        return {
+            'kind': 'pointer',
             'bytes': die.attributes['DW_AT_byte_size'].value,
-            # we'd like to say what it's a pointer to, but that
-            # may involve recursively descending a struct, so
-            # have to think about that
-            'pointer': ptr_to
+            'ref': reference(die)
         }
     elif die.tag in ['DW_TAG_structure_type', 'DW_TAG_union_type']:
         kw = { 'DW_TAG_structure_type': 'struct',
                'DW_TAG_union_type': 'union' }[die.tag]
-        struct = walk_struct_or_union(die)
-        name = next(iter(struct.keys()))
-        if name == None:
-            return { 'include': struct }
-        else:
-            tags = { **tags, **struct }
-            return { kw:  name }
-    elif die.tag == 'DW_TAG_volatile_type':
         return {
-            **find_type(die.get_DIE_from_attribute('DW_AT_type')),
-            **{'volatile': True}
+            'kind': kw,
+            'members': walk_struct_members(die)
         }
     else:
-        pdb.set_trace()
+        return { 'kind': 'unknown', 'tag': die.tag }
 
-def walk_typedef(die):
-    typ = find_type(die.get_DIE_from_attribute('DW_AT_type'))
-    name = die.attributes['DW_AT_name'].value.decode('ascii')
-    #pdb.set_trace()
-    return { name: typ }
-
-def inc_offsets(members, increment):
+def inc_offsets00(members, increment):
     def bump(v):
         return {**v, **{'offset': v['offset'] + (increment or 0)}}
     return dict(map(lambda kv: (kv[0], bump(kv[1])), members.items()))
@@ -113,44 +113,41 @@ def inc_offsets(members, increment):
 def walk_struct_members(die):
     m = {}
     for child in die.iter_children():
+        typ = parse_die(die_type(child))
         attr = child.attributes
-        if (child.tag == 'DW_TAG_member') and ('DW_AT_name' in attr):
-            offset = None
-            if 'DW_AT_data_member_location' in attr:
-                offset = attr['DW_AT_data_member_location'].value
-            typ = find_type(child.get_DIE_from_attribute('DW_AT_type'))
-            n = next(iter(typ.keys()))
-            if n == 'include':
-                included = inc_offsets(typ['include'][None]['members'], offset)
-                m = { **m, **included }
-            else:
-                m[attr['DW_AT_name'].value.decode('ascii')] = {
-                    'offset': offset,
-                    'type': typ
-                }
+        offset = None
+        if 'DW_AT_data_member_location' in attr:
+            offset = attr['DW_AT_data_member_location'].value
+        m[die_name(child)] = {
+            'offset': offset,
+            **typ
+        }
     return m
 
-def walk_struct_or_union(die):
-    attr =  die.attributes
-    value = { 'members': walk_struct_members(die) }
-    if 'DW_AT_byte_size' in attr:
-        value['bytes'] = attr['DW_AT_byte_size'].value
-    if 'DW_AT_name' in attr:
-        name = attr['DW_AT_name'].value.decode('ascii')
-        return { name: value }
-    else:
-        return { None: value }
+
+def record_name(die):
+    global names
+    name = die_name(die)
+    if name == None:
+        pdb.set_trace()
+    ns = die_namespace(die)
+    print("found namespace=%s name=%s" % (ns, name), file=sys.stderr)
+    if not name in names[ns]:
+        # print("descending ...")
+        names[ns][name] = True
+        p = parse_die(die)
+        names[ns][name] = p
 
 
-def walk_die_info(die):
-    global tags
-    if die.tag in ["DW_TAG_structure_type", "DW_TAG_union_type"]:
-        tags = { **tags, **walk_struct_or_union(die) }
+def walk_die_info(die, wanted_names):
+    name = die_name(die)
+    if name and (name in wanted_names):
+        record_name(die)
 
     for child in die.iter_children():
-        walk_die_info(child)
+        walk_die_info(child, wanted_names)
 
-def process_stream(f):
+def process_stream(f, wanted_names):
     elffile = ELFFile(f)
 
     if not elffile.has_dwarf_info():
@@ -158,16 +155,14 @@ def process_stream(f):
         return
 
     for CU in elffile.get_dwarf_info().iter_CUs():
-        walk_die_info(CU.get_top_DIE())
+        walk_die_info(CU.get_top_DIE(), wanted_names)
 
 if __name__ == '__main__':
+    wanted_names = sys.argv[2:]
     with arpy.Archive(sys.argv[1]) as ar:
         # print("files: %s" % ar.namelist(), file=sys.stderr)
-        for header in (ar.infolist()[17:21]):
-            print("file: %s" % header.name, file=sys.stderr)
+        for header in (ar.infolist()):
+            # print("file: %s" % header.name, file=sys.stderr)
             with ar.open(header) as f:
-                process_stream(f)
-    json.dump({
-        'tag': tags,
-        'identifier': identifiers
-    }, sys.stdout)
+                process_stream(f, wanted_names)
+    json.dump(names, sys.stdout)
