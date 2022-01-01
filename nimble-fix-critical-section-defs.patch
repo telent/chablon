@@ -1,0 +1,22 @@
+diff --git a/porting/npl/freertos/include/nimble/nimble_npl_os.h b/porting/npl/freertos/include/nimble/nimble_npl_os.h
+index 00f64ba2..f9c70800 100644
+--- a/porting/npl/freertos/include/nimble/nimble_npl_os.h
++++ b/porting/npl/freertos/include/nimble/nimble_npl_os.h
+@@ -281,15 +281,13 @@ ble_npl_hw_set_isr(int irqn, void (*addr)(void))
+ static inline uint32_t
+ ble_npl_hw_enter_critical(void)
+ {
+-    vPortEnterCritical();
+-    return 0;
++  return npl_freertos_hw_enter_critical();
+ }
+ 
+ static inline void
+ ble_npl_hw_exit_critical(uint32_t ctx)
+ {
+-    vPortExitCritical();
+-
++  npl_freertos_hw_exit_critical(ctx);
+ }
+ 
+ #ifdef __cplusplus
