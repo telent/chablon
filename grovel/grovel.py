@@ -106,7 +106,7 @@ def parse_die(die):
     else:
         return { 'kind': 'unknown', 'tag': die.tag }
 
-def inc_offsets00(members, increment):
+def inc_offsets(members, increment):
     def bump(v):
         return {**v, **{'offset': v['offset'] + (increment or 0)}}
     return dict(map(lambda kv: (kv[0], bump(kv[1])), members.items()))
@@ -119,10 +119,14 @@ def walk_struct_members(die):
         offset = None
         if 'DW_AT_data_member_location' in attr:
             offset = attr['DW_AT_data_member_location'].value
-        m[die_name(child)] = {
-            'offset': offset,
-            **typ
-        }
+        name = die_name(child)
+        if name == None:
+            m = { **m, **inc_offsets(typ['members'], offset) }
+        else:
+            m[name] = {
+                'offset': offset,
+                **typ
+            }
     return m
 
 def record_name(die):

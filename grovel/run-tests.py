@@ -34,6 +34,9 @@ class TestAnonNestedStruct(unittest.TestCase):
         members = self.subject['tag'][self.TAG]['members']
         expected_members = ['john','len','buf','george','ringo'];
         self.assertEqual([ *members.keys() ], expected_members)
+        self.assertEqual(members['len']['offset'], 4)
+        self.assertEqual(members['buf']['offset'], 8)
+        self.assertEqual(members['george']['offset'], 40)
 
 
 unittest.main()
