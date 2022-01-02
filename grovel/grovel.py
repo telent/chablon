@@ -5,6 +5,7 @@ import sys
 import json
 
 from elftools.elf.elffile import ELFFile
+import io
 import arpy
 import pdb
 
@@ -157,12 +158,23 @@ def process_stream(f, wanted_names):
     for CU in elffile.get_dwarf_info().iter_CUs():
         walk_die_info(CU.get_top_DIE(), wanted_names)
 
+def is_archive(filename):
+    magic1 = b"!<arch>\n"
+    magic2 = b"!<thin>\n"
+    with io.open(filename, "rb") as f:
+        bytes = f.read(len(magic1))
+    return bytes in [magic1, magic2]
+
 if __name__ == '__main__':
     wanted_names = sys.argv[2:]
-    with arpy.Archive(sys.argv[1]) as ar:
-        # print("files: %s" % ar.namelist(), file=sys.stderr)
-        for header in (ar.infolist()):
-            # print("file: %s" % header.name, file=sys.stderr)
-            with ar.open(header) as f:
-                process_stream(f, wanted_names)
+    filename = sys.argv[1]
+    if is_archive(filename):
+        with arpy.Archive(filename) as ar:
+            for header in (ar.infolist()):
+                with ar.open(header) as f:
+                    process_stream(f, wanted_names)
+    else:
+        with open(filename, "rb") as f:
+            process_stream(f, wanted_names)
+
     json.dump(names, sys.stdout)
