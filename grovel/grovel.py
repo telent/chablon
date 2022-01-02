@@ -101,6 +101,7 @@ def parse_die(die):
                'DW_TAG_union_type': 'union' }[die.tag]
         return {
             'kind': kw,
+            'bytes': die.attributes['DW_AT_byte_size'].value,
             'members': walk_struct_members(die)
         }
     else:

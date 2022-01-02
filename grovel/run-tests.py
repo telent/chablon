@@ -40,5 +40,21 @@ class TestAnonNestedStruct(TestCase):
         self.assertEqual(members['buf']['offset'], 8)
         self.assertEqual(members['george']['offset'], 40)
 
+class TestNestedStruct(TestCase):
+    def test_struct_data(self):
+        self.assertEqual(self.subject['tag'][self.tag()]['bytes'], 56)
+
+    def test_members(self):
+        members = self.subject['tag'][self.tag()]['members']
+        expected_members = ['john','nested','george','ringo'];
+        self.assertEqual([ *members.keys() ], expected_members)
+        self.assertEqual(members['nested']['offset'], 4)
+        self.assertEqual(members['nested']['bytes'], 36)
+        self.assertEqual(members['george']['offset'], 40)
+
+class TestSelfPointerStruct(TestCase):
+    def test_members(self):
+        members = self.subject['tag'][self.tag()]['members']
+        self.assertIn('next', [ *members.keys() ])
 
 unittest.main()
