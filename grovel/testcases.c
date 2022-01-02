@@ -1,7 +1,7 @@
 
 typedef unsigned int u32;
 
-struct test1 {
+struct simple_struct {
     char * john;
     int paul;
     double george;
