@@ -1,4 +1,4 @@
-# adapted from elftools example: dwarf_die_tree.py
+# adapted from elftools example dwarf_die_tree.py
 
 from __future__ import print_function
 import sys
@@ -125,7 +125,6 @@ def walk_struct_members(die):
         }
     return m
 
-
 def record_name(die):
     global names
     name = die_name(die)
@@ -138,7 +137,6 @@ def record_name(die):
         names[ns][name] = True
         p = parse_die(die)
         names[ns][name] = p
-
 
 def walk_die_info(die, wanted_names):
     name = die_name(die)
@@ -165,16 +163,24 @@ def is_archive(filename):
         bytes = f.read(len(magic1))
     return bytes in [magic1, magic2]
 
+def process_archive(filename, wanted_names):
+    with arpy.Archive(filename) as ar:
+        for header in (ar.infolist()):
+            with ar.open(header) as f:
+                process_stream(f, wanted_names)
+    return names
+
+def process_object(filename, wanted_names):
+    with open(filename, "rb") as f:
+        process_stream(f, wanted_names)
+    return names
+
 if __name__ == '__main__':
     wanted_names = sys.argv[2:]
     filename = sys.argv[1]
     if is_archive(filename):
-        with arpy.Archive(filename) as ar:
-            for header in (ar.infolist()):
-                with ar.open(header) as f:
-                    process_stream(f, wanted_names)
+        ret = process_archive(filename, wanted_names)
     else:
-        with open(filename, "rb") as f:
-            process_stream(f, wanted_names)
+        ret = process_object(filename, wanted_names)
 
-    json.dump(names, sys.stdout)
+    json.dump(ret, sys.stdout)

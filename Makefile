@@ -325,3 +325,6 @@ LDFLAGS=$(SYSROOT) $(OPTS) \
      -Wl,--print-memory-usage --specs=nano.specs \
      -lnosys -Wl,-Map=chablon.map \
      -L$(LUA_PATH)/lib
+
+test-grovel: grovel/testcases.o
+	python grovel/run-tests.py
