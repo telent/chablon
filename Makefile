@@ -7,13 +7,13 @@ ifndef NRF5_SDK_PATH
 $(error Missing required parameter NRF5_SDK_PATH)
 endif
 # this should point to the directory containing bare-metal ARM liblua.a
-ifndef LUA_PATH
-$(error Missing required parameter LUA_PATH)
+ifndef PATH_TO_LUA
+$(error Missing required parameter PATH_TO_LUA)
 endif
 # this should point to the directory containing a Lua installation
 # that runs on the build machine (x86_64 or whatever)
-ifndef LUA_BUILD_PATH
-$(error Missing required parameter LUA_BUILD_PATH)
+ifndef PATH_TO_BUILD_LUA
+$(error Missing required parameter PATH_TO_BUILD_LUA)
 endif
 
 ###
@@ -249,7 +249,7 @@ INCLUDES=-Ilibs \
     -I$(NRF5_SDK_PATH)/components/libraries/util \
     -I$(NRF5_SDK_PATH)/external/segger_rtt \
     -I$(NRF5_SDK_PATH)/external/fprintf \
-    -I$(LUA_PATH)/include \
+    -I$(PATH_TO_LUA)/include \
     -isystem . \
     -I$(NRF5_SDK_PATH)/external/thedotfactory_fonts
 
@@ -272,11 +272,15 @@ $(patsubst %.c,nimble/%.o,$(1)): $(NIMBLE_PATH)/$(1)
 	$(CC) $(CFLAGS) -Wno-sign-compare -o $$@ -c $$^
 endef
 
+export LUA_PATH
 %.lua: %.fnl
-	$(LUA_BUILD_PATH)/bin/lua $(FENNEL) --compile $<   > $@
+	f=tmp$$$$ && \
+	$(PATH_TO_BUILD_LUA)/bin/lua $(FENNEL) --no-compiler-sandbox --compile $<   > $$f && \
+	mv $$f $@
+
 
 %.luac: %.lua
-	$(LUA_BUILD_PATH)/bin/luac -o $@ $<
+	$(PATH_TO_BUILD_LUA)/bin/luac -o $@ $<
 
 %.lua.c: %.luac
 	xxd -i $< $@
@@ -317,14 +321,14 @@ chablon.elf: chablon
 	mv $^ $@
 
 TAGS:
-	ctags --recurse -e . $(LUA_PATH) $(NRF5_SDK_PATH)
+	ctags --recurse -e . $(PATH_TO_LUA) $(NRF5_SDK_PATH)
 
 LDFLAGS=$(SYSROOT) $(OPTS) \
      -T gcc_nrf52.ld  \
      -Wl,--gc-sections \
      -Wl,--print-memory-usage --specs=nano.specs \
      -lnosys -Wl,-Map=chablon.map \
-     -L$(LUA_PATH)/lib
+     -L$(PATH_TO_LUA)/lib
 
 test-grovel: grovel/testcases.o
 	python grovel/run-tests.py

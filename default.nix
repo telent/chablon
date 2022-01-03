@@ -95,8 +95,9 @@ let nrf5Sdk = pkgs.fetchzip {
       makeFlags = [
         "ARM_NONE_EABI_TOOLCHAIN_PATH=${gcc-arm-embedded}"
         "NRF5_SDK_PATH=${nrf5Sdk}"
-        "LUA_PATH=${lua}"
-        "LUA_BUILD_PATH=${luaBuild}"
+        "PATH_TO_LUA=${lua}"
+        "LUA_PATH=${json-lua}/?.lua"
+        "PATH_TO_BUILD_LUA=${luaBuild}"
         "FENNEL=${fennel}"
         "NIMBLE_PATH=${nimble}"
       ];
