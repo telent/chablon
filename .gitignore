@@ -9,3 +9,4 @@ nimble/
 *.lua.c
 *~
 TAGS
+__pycache__
