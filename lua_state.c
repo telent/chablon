@@ -268,6 +268,53 @@ static int task_delay(lua_State *L){
     return 0;
 }
 
+static int unsafe_peek(lua_State *L){
+    int8_t * userdata = (void *) lua_touserdata(L, 1);
+    int offset = lua_tonumber(L, 2);
+    int size = lua_tonumber(L, 3);
+    /* FIXME check offset is in bounds */
+    switch(size) {
+    case 1:
+	lua_pushinteger(L, *(userdata+offset));
+	return 1;
+    case 2:
+	lua_pushinteger(L, *(int16_t *)(userdata+offset));
+	return 1;
+    case 4:
+	lua_pushinteger(L, *(int32_t *)(userdata+offset));
+	return 1;
+    }
+    return 0;
+}
+
+static int unsafe_poke(lua_State *L){
+    int8_t  * userdata = (void *) lua_touserdata(L, 1);
+    int offset = lua_tonumber(L, 2);
+    int size = lua_tonumber(L, 3);
+    int value = lua_tointeger(L, 4);
+    /* FIXME check offset is in bounds */
+    switch(size) {
+    case 1:
+	*(userdata+offset) = value;
+	break;
+    case 2:
+	*(int16_t *)(userdata+offset) = value;
+	break;
+    case 4:
+	*(int32_t *)(userdata+offset) = value;
+	break;
+    }
+    return 0;
+}
+
+static int unsafe_alloc(lua_State* L) {
+    int size = luaL_checkinteger(L, 1);
+    void * bytes = lua_newuserdata(L, size);
+    memset(bytes, 0, size);
+    return 1;
+}
+
+
 static void create_libs(lua_State* L) {
     static const struct luaL_Reg gpio_funcs[] = {
 	{ "set_direction",  gpio_set_direction  },
@@ -299,6 +346,16 @@ static void create_libs(lua_State* L) {
     luaL_newlib(L, spictl_funcs);
     lua_setglobal(L, "spictl_ffi");
     memused("spictl");
+
+    static const struct luaL_Reg unsafe_funcs[] = {
+	{ "peek",  unsafe_peek },
+	{ "poke",  unsafe_poke },
+	{ "alloc",  unsafe_alloc },
+	{ NULL, NULL }
+    };
+    luaL_newlib(L, unsafe_funcs);
+    lua_setglobal(L, "unsafe");
+
 
     lua_pushcfunction(L, trace);
     lua_setglobal(L, "trace");
