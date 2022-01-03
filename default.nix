@@ -80,6 +80,14 @@ let nrf5Sdk = pkgs.fetchzip {
       '';
     });
 
+    json-lua = pkgs.fetchFromGitHub {
+      name = "json-lua";
+      repo = "json.lua";
+      owner = "rxi";
+      hash = "sha256:16yzbyp296abirl77xk3fw5jqgcjf3frmwxph22sfxam8npkxcq6";
+      rev = "dbf4b2dd2eb7c23be2773c89eb059dadd6436f94";
+    };
+
     chablon = stdenv.mkDerivation {
       src = if lib.inNixShell
             then null

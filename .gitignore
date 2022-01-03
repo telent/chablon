@@ -10,3 +10,4 @@ nimble/
 *~
 TAGS
 __pycache__
+*.gen.json

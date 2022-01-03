@@ -272,12 +272,18 @@ $(patsubst %.c,nimble/%.o,$(1)): $(NIMBLE_PATH)/$(1)
 	$(CC) $(CFLAGS) -Wno-sign-compare -o $$@ -c $$^
 endef
 
+STRUCT_NAMES=ble_gap_adv_params ble_hs_adv_fields ble_uuid16_t ble_gatt_svc_def
+
+ble-constants.gen.json: Makefile libnimble.a Makefile
+	python grovel/grovel.py libnimble.a $(STRUCT_NAMES) > $@
+
 export LUA_PATH
 %.lua: %.fnl
 	f=tmp$$$$ && \
 	$(PATH_TO_BUILD_LUA)/bin/lua $(FENNEL) --no-compiler-sandbox --compile $<   > $$f && \
 	mv $$f $@
 
+ble.lua: ble-constants.gen.json grovel/macros.fnl
 
 %.luac: %.lua
 	$(PATH_TO_BUILD_LUA)/bin/luac -o $@ $<
@@ -297,7 +303,7 @@ libnimble.a: $(patsubst %,nimble/%,$(NIMBLE_OBJ_FILES))
 gcc_startup_nrf52.o: $(NRF5_SDK_PATH)/modules/nrfx/mdk/gcc_startup_nrf52.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-LUA_MODULES=hello byte-buffer backlight lcd spi-controller
+LUA_MODULES=hello byte-buffer backlight lcd spi-controller ble
 
 OBJECTS=\
 	gcc_startup_nrf52.o \
